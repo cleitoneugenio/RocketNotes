@@ -6,7 +6,7 @@ class NotesController {
         const { title, description, tags, links } = request.body;
         const  user_id  = request.user.id;
 
-        const [note_id] = await knex("notes").insert({
+        const [note_id]  = await knex("notes").insert({
             title,
             description,
             user_id,
@@ -42,7 +42,7 @@ class NotesController {
         const links = await knex("links").where({ note_id: id }).orderBy("created_at");
 
         return response.json({
-            ...note,
+            ...note, 
             tags,
             links,
         });
@@ -72,13 +72,14 @@ class NotesController {
                 "notes.user_id",
             ])
             .where("notes.user_id", user_id)
-            .whereLike("notes.title", `%%${title}`)
+            .whereLike("notes.title", `%${title}%`)
             .whereIn("name", filterTags)
             .innerJoin("notes", "notes.id", "tags.note_id")
+            .groupBy("notes.id")
             .orderBy("notes.title");
 
         } else {
-            notes = await knex(notes)
+            notes = await knex("notes")
                 .where({ user_id })
                 .whereLike("title", `%${title}%`)
                 .orderBy("title");
